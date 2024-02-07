@@ -22,9 +22,9 @@ class Name(Field):
 
 class Phone(Field):
     def __init__(self, value):
-        super().__init__(value)
-        if not self.validate(self.value):
+        if not self.validate(value):
             raise ValueError("Phone number must contain 10 digits.")
+        super().__init__(value)
 
     @property
     def value(self):
@@ -76,6 +76,15 @@ class Record:
     def remove_phone(self, phone):
         self.phones = [p for p in self.phones if p.value != phone]
 
+    def find_phone(self, phone):
+        for p in self.phones:
+            if p.value == phone:
+                return p
+        return None
+    
+    def __str__(self):
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}" + (f", birthday: {self.birthday.value}" if self.birthday else "")
+
     def edit_phone(self, old_phone, new_phone):
         found = False
         for p in self.phones:
@@ -84,14 +93,8 @@ class Record:
                 found = True
                 break
 
-        if not found:
-            raise ValueError(f"No phone number {old_phone} found to edit.")
-
-    def find_phone(self, phone):
-        for p in self.phones:
-            if p.value == phone:
-                return p
-        return None
+            if not found:
+                raise ValueError(f"No phone number {old_phone} found to edit.")
 
     def days_to_birthday(self):
         if not self.birthday:
@@ -105,8 +108,7 @@ class Record:
         
         return (bday - now).days
 
-    def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}" + (f", birthday: {self.birthday.value}" if self.birthday else "")
+  
 
 class AddressBook(UserDict):
     def add_record(self, record):
@@ -133,7 +135,7 @@ john_record.add_phone("1111111111")
 book.add_record(john_record)
 
 jane_record = Record("Jane")
-jane_record.add_phone("982422277")
+jane_record.add_phone("0982422277")
 book.add_record(jane_record)
 
 # Print all records
