@@ -28,26 +28,22 @@ class Name(Field):
     pass
 
 class Phone(Field):
-    def validate(self, value):
+    def is_valid(self, value):
         return value is not None and len(value) == 10 and value.isdigit()
 
     def __init__(self, value):
-        if not self.validate(value):
-            raise ValueError("Phone number must contain 10 digits.")
         super().__init__(value)
-
 
 class Birthday(Field):
-    def __init__(self, value=None):
-        if value:
-            self.validate_b(value)
-        super().__init__(value)
-
-    def validate_b(self, value):
+    def is_valid(self, value):
         try:
             datetime.strptime(value, '%Y-%m-%d')
+            return True
         except ValueError:
-            raise ValueError ("Birthday must be in the format YYYY-MM-DD.")
+            return False
+
+    def __init__(self, value=None):
+        super().__init__(value)
 
 class Record:
     def __init__(self, name, birthday=None):
