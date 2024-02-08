@@ -4,65 +4,50 @@ from datetime import datetime, timedelta
 
 class Field:
     def __init__(self, value):
-        self._value = value
+        if not self.is_valid(value):
+            raise ValueError("Invalid value")
+        self.__value = value
+
+    def __str__(self):
+        return str(self.__value)
+
+    def is_valid(self, value):
+        return True
 
     @property
     def value(self):
-        return self._value
+        return self.__value
 
     @value.setter
     def value(self, value):
-        self._value = value
-
-    def __str__(self):
-        return str(self.value)
+        if not self.is_valid(value):
+            raise ValueError("Invalid value")
+        self.__value = value
 
 class Name(Field):
     pass
 
 class Phone(Field):
+    def validate(self, value):
+        return value is not None and len(value) == 10 and value.isdigit()
+
     def __init__(self, value):
         if not self.validate(value):
             raise ValueError("Phone number must contain 10 digits.")
         super().__init__(value)
 
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        if not self.validate(value):
-            raise ValueError("Phone number must contain 10 digits.")
-        self._value = value
-
-    @staticmethod
-    def validate(phone):
-        return bool(re.match(r"^\d{10}$", phone))
 
 class Birthday(Field):
-    def __init__(self, value):
+    def __init__(self, value=None):
+        if value:
+            self.validate_b(value)
         super().__init__(value)
-        if not self.validate(self.value):
-            raise ValueError("Birthday must be in the format YYYY-MM-DD.")
 
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        if not self.validate(value):
-            raise ValueError("Birthday must be in the format YYYY-MM-DD.")
-        self._value = value
-
-    @staticmethod
-    def validate(birthday):
+    def validate_b(self, value):
         try:
-            datetime.strptime(birthday, '%Y-%m-%d')
-            return True
+            datetime.strptime(value, '%Y-%m-%d')
         except ValueError:
-            return False
+            raise ValueError ("Birthday must be in the format YYYY-MM-DD.")
 
 class Record:
     def __init__(self, name, birthday=None):
@@ -74,7 +59,10 @@ class Record:
         self.phones.append(Phone(phone))
 
     def remove_phone(self, phone):
-        self.phones = [p for p in self.phones if p.value != phone]
+        for p in self.phones:
+            if p.value == phone:
+                self.phones.remove(p)
+                break
 
     def find_phone(self, phone):
         for p in self.phones:
